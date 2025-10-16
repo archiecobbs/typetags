@@ -114,7 +114,7 @@ import java.lang.annotation.Target;
  *          spec = (PhoneNumber)this.getClass()
  *            .getMethod("validatePhoneNumber", String.class)
  *            .getAnnotatedReturnType()
- *            .getAnnotations()[0]);
+ *            .getAnnotations()[0];
  *      } catch (ReflectiveOperationException e) {
  *          throw new RuntimeException("unexpected error", e);
  *      }
