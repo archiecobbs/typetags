@@ -8,7 +8,7 @@ package org.dellroad.typetag.core;
  * Thrown by a {@link Validator} or {@link AnnotationValidator} when an invalid value is encountered.
  */
 @SuppressWarnings("serial")
-public class InvalidValueException extends RuntimeException {
+public class InvalidValueException extends IllegalArgumentException {
 
     /**
      * Constructor.

@@ -23,6 +23,7 @@
         <module>core</module>
         <module>checker</module>
     <!--
+        <module>maven-plugin</module>
         <module>demo</module>
     -->
     </modules>
