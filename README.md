@@ -7,4 +7,4 @@ An experiment: What is the simplest possible solution to the problem of "custom 
 
 ### Docs
 
-[API Javadocs](https://archiecobbs.github.io/typetags/site/apidocs/org/dellroad/typetag/core/TypeTag.html)
+[API Javadocs](https://archiecobbs.github.io/typetags/site/apidocs/org/dellroad/typetags/core/TypeTag.html)

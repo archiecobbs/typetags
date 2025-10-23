@@ -2,7 +2,7 @@
  * Copyright (C) 2025 Archie L. Cobbs. All rights reserved.
  */
 
-package org.dellroad.typetag.core;
+package org.dellroad.typetags.core;
 
 /**
  * Thrown by a {@link Validator} or {@link AnnotationValidator} when an invalid value is encountered.

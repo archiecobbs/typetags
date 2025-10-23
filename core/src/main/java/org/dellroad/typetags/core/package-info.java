@@ -5,4 +5,4 @@
 /**
  * Core classes for TypeTag's.
  */
-package org.dellroad.typetag.core;
+package org.dellroad.typetags.core;

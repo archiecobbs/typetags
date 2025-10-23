@@ -2,7 +2,7 @@
  * Copyright (C) 2025 Archie L. Cobbs. All rights reserved.
  */
 
-package org.dellroad.typetag.core;
+package org.dellroad.typetags.core;
 
 /**
  * Implemented by classes capable of validating values.
