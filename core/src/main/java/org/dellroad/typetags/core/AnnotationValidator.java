@@ -43,6 +43,8 @@ public interface AnnotationValidator<A extends Annotation> {
      * @throws IllegalArgumentException if {@code spec} is null
      */
     default Validator toValidator(A spec) {
+        if (spec == null)
+            throw new IllegalArgumentException("null spec");
         return new Validator() {
             @Override
             public <T> T validate(T value) {
