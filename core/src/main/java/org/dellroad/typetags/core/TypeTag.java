@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  *   *&#47;
  *  &#64;Retention(RetentionPolicy.RUNTIME)
  *  &#64;Target(ElementType.TYPE_USE)
- *  &#64;TypeTag(appliesTo = String.class, validatedBy = PhoneNumberChecker.class)
+ *  &#64;TypeTag(restrictTo = String.class, validatedBy = PhoneNumberChecker.class)
  *  public &#64;interface PhoneNumber {
  *
  *      &#47;**
@@ -69,7 +69,7 @@ import java.lang.annotation.Target;
  *          if (value == null)
  *              throw new InvalidValueException("phone number can't be null");
  *
- *          // We may assume String here because of &#64;TypeTag.appliesTo()
+ *          // We may assume String here because of &#64;TypeTag.restrictTo()
  *          final String string = (String)value;
  *
  *          // Check for proper format
@@ -139,34 +139,44 @@ import java.lang.annotation.Target;
 public @interface TypeTag {
 
     /**
-     * Restrict valid values to the specified type.
+     * Restrict valid values to being instances of one the specified types.
      *
      * <p>
-     * If this property is set, then any values that are not assignable to the specified type are
-     * considered invalid. In particular, they should be immediately rejected and not passed to the
-     * validator specified by {@link #validatedBy}, if any.
+     * If this property is set, then any value that is not assignable to one of the specified types
+     * is considered invalid. During compilation, annotating a type that can't possibly overlap with
+     * one of the specified types will cause an error; at runtime, values' actual types should be checked
+     * and any that don't match immediately rejected (by throwing {@link InvalidValueException}) and not
+     * passed to the validator specified by {@link #validatedBy}, if any.
      *
      * <p>
-     * Primitive types should not be used here; they may cause an exception to be thrown.
-     * Instead, use the corresponding wrapper type (and check for nulls separately, if needed).
+     * Primitive types are special: at compile time, they are distinct from their corresponding wrapper
+     * types. For example, if {@code restrictTo = int.class}, then the target annotation may be applied to type
+     * {@code int} but not type {@code Integer}. At runtime, primitive types and their corresponding wrapper types
+     * are not distinguished because by the time they are checked, primitive values are always wrapped. So
+     * for example, an {@link Integer} value would be permitted by {@code restrictTo = int.class}, and an
+     * {@link int} value would be permitted by {@code restrictTo = Integer.class}.
      *
      * <p>
-     * To not restrict this annotation by type, leave this property set to its default value.
+     * To not restrict values by type, leave this property set to its default value (i.e., empty).
      *
-     * @return supertype of all valid values
+     * @return the supertype(s) of all valid values, or empty for no restriction
      */
-    @SuppressWarnings("rawtypes")
-    Class<?> appliesTo() default Object.class;
+    Class<?>[] restrictTo() default { };
 
     /**
-     * Restrict valid values to those that are accepted by instances of the specified class.
+     * Restrict valid values to those that are accepted by an instance of the specified class.
      *
      * <p>
      * The class must have a public default constructor.
      *
      * <p>
-     * If no additional validation is required beyond {@link #appliesTo}, leave this property
-     * set to its default value.
+     * This property is only used at runtime, and only for values that have satisfied the type constraints
+     * imposed by {@link #restrictTo}, if any.
+     *
+     * <p>
+     * If no additional validation is required beyond {@link #restrictTo}, you can leave this property
+     * set to its default value. That can be useful in situations where you want to restrict values
+     * by type only, e.g., "Must be either a {@code String} or a {@code byte[]}".
      *
      * @return annotation-based validation class
      */

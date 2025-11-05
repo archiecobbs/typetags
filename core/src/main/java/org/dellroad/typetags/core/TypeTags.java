@@ -24,30 +24,30 @@ public class TypeTags {
     private TypeTags() {
     }
 
-    /**
-     * Build a validator that validates values according to the {@link TypeTag @TypeTag}-meta-annotated annotations
-     * on the given method's return type.
-     *
-     * <p>
-     * This is a convenience method for the common use case where a validation method wants to obtain the
-     * TypeTag's on its own return type.
-     *
-     * @param method the method whose return type should be inspected
-     * @return a validator that throws {@link InvalidValueException} when invalid values are encountered
-     * @throws IllegalArgumentException if {@code method} has zero {@link TypeTag @TypeTag} meta-annotated annotations
-     * @throws IllegalArgumentException if {@code method} is null
-     */
-    public static Validator getValidatorFromReturnType(Method method) {
-        if (method == null)
-            throw new IllegalArgumentException("null method");
-        final AnnotatedType returnType = method.getAnnotatedReturnType();
-        return Stream.of(returnType.getAnnotations())
-          .filter(spec -> spec.annotationType().isAnnotationPresent(TypeTag.class))
-          .map(TypeTags::getValidator)
-          .reduce(Validator::andThen)
-          .orElseThrow(() -> new IllegalArgumentException(String.format(
-            "no @%s meta-annotated annotations found on method return type %s", TypeTag.class.getSimpleName(), returnType)));
-    }
+//    /**
+//     * Build a validator that validates values according to the {@link TypeTag @TypeTag}-meta-annotated annotations
+//     * on the given method's return type.
+//     *
+//     * <p>
+//     * This is a convenience method for the common use case where a validation method wants to obtain the
+//     * TypeTag's on its own return type.
+//     *
+//     * @param method the method whose return type should be inspected
+//     * @return a validator that throws {@link InvalidValueException} when invalid values are encountered
+//     * @throws IllegalArgumentException if {@code method} has zero {@link TypeTag @TypeTag} meta-annotated annotations
+//     * @throws IllegalArgumentException if {@code method} is null
+//     */
+//    public static Validator getValidatorFromReturnType(Method method) {
+//        if (method == null)
+//            throw new IllegalArgumentException("null method");
+//        final AnnotatedType returnType = method.getAnnotatedReturnType();
+//        return Stream.of(returnType.getAnnotations())
+//          .filter(spec -> spec.annotationType().isAnnotationPresent(TypeTag.class))
+//          .map(TypeTags::getValidator)
+//          .reduce(Validator::andThen)
+//          .orElseThrow(() -> new IllegalArgumentException(String.format(
+//            "no @%s meta-annotated annotations found on method return type %s", TypeTag.class.getSimpleName(), returnType)));
+//    }
 
     /**
      * Build a validator that validates values according to the given {@link TypeTag @TypeTag}-meta-annotated annotation.
@@ -79,13 +79,8 @@ public class TypeTags {
         }
 
         // Build the type checking validator, if any
-        final Class<?> appliesTo = tagType.appliesTo();
-        if (appliesTo.isPrimitive()) {
-            throw new IllegalArgumentException(String.format(
-              "@%s.appliesTo() specified for annotation type %s must not be primitive (found %s)",
-              TypeTag.class.getSimpleName(), annotationType.getName(), appliesTo.getName()));
-        }
-        final Validator appliesToValidator = appliesTo == Object.class ? null : Validator.checkingType(appliesTo);
+        final Class<?>[] restrictTo = tagType.restrictTo();
+        final Validator restrictToValidator = restrictTo.length > 0 ? Validator.restrictTo(restrictTo) : null;
 
         // Build the custom validator, if any
         final Class<? extends AnnotationValidator<A>> validatedBy = (Class<? extends AnnotationValidator<A>>)tagType.validatedBy();
@@ -93,7 +88,7 @@ public class TypeTags {
           null : TypeTags.buildCustomValidator(validatedBy, spec);
 
         // Build the combined validator
-        return Stream.of(appliesToValidator, validatedByValidator)
+        return Stream.of(restrictToValidator, validatedByValidator)
           .filter(Objects::nonNull)
           .reduce(Validator::andThen)
           .orElseGet(Validator::alwaysValid);

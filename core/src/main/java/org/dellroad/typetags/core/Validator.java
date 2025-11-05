@@ -4,6 +4,10 @@
 
 package org.dellroad.typetags.core;
 
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Implemented by classes capable of validating values.
  */
@@ -63,27 +67,28 @@ public interface Validator {
     }
 
     /**
-     * Build a validator that verifies that values are assignable to the given type.
+     * Build a validator that verifies that values are assignable to one of the given types.
      *
-     * @param requiredType required type for values; must not be primitive
-     * @return validator that verifies values are instances of {@code requiredType}
-     * @throws IllegalArgumentException if {@code requiredType} is a primitive type
-     * @throws IllegalArgumentException if {@code requiredType} is null
+     * @param allowedTypes allowed types for values; must not be primitive
+     * @return validator that verifies values are instances of one of the {@code allowedTypes}
+     * @throws IllegalArgumentException if {@code allowedTypes} is null, empty, or contains a null value
      */
-    public static Validator checkingType(Class<?> requiredType) {
-        if (requiredType == null)
-            throw new IllegalArgumentException("null type");
-        if (requiredType.isPrimitive())
-            throw new IllegalArgumentException("primitive type");
+    public static Validator restrictTo(Class<?>[] allowedTypes) {
+        if (allowedTypes == null)
+            throw new IllegalArgumentException("null array");
+        if (allowedTypes.length == 0)
+            throw new IllegalArgumentException("empty array");
+        if (Stream.of(allowedTypes).anyMatch(Objects::isNull))
+            throw new IllegalArgumentException("array contains a null type");
         return new Validator() {
             @Override
             public <T> T validate(T value) {
-              if (!requiredType.isInstance(value)) {
-                  throw new InvalidValueException(String.format(
-                    "value is required to be %s but %s", requiredType.getName(),
-                    value != null ? "has type " + value.getClass().getName() : "is null"));
-              }
-              return value;
+                if (Stream.of(allowedTypes).map(TypeUtil::primitiveToWrapper).anyMatch(t -> t.isInstance(value)))
+                    return value;
+                final String allowed = allowedTypes.length == 1 ? allowedTypes[0].getName() :
+                  "one of " + Stream.of(allowedTypes).map(Class::getName).collect(Collectors.joining(", "));
+                throw new InvalidValueException(String.format("value is required to be %s but %s",
+                  allowed, value != null ? "has type " + value.getClass().getName() : "is null"));
             }
         };
     }

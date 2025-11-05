@@ -26,7 +26,7 @@ import org.dellroad.typetags.core.TypeTag;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)
-@TypeTag(appliesTo = String.class, validatedBy = PhoneNumber.Validator.class)
+@TypeTag(restrictTo = String.class, validatedBy = PhoneNumber.Validator.class)
 public @interface PhoneNumber {
 
     /**
@@ -58,7 +58,7 @@ public @interface PhoneNumber {
             if (value == null)
                 throw new InvalidValueException("phone number can't be null");
 
-            // We may assume String here because of @TypeTag.appliesTo()
+            // We may assume String here because of @TypeTag.restrictTo()
             final String string = (String)value;
 
             // Check for proper format
