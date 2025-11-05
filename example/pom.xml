@@ -62,6 +62,10 @@
                         <!-- COMMENT THIS FLAG OUT to make the build fail on violations -->
                         <arg>-Awarns</arg>
 
+                        <!-- Misc -->
+                        <arg>-AshowPrefixInWarningMessages</arg>
+
+                        <!-- Required to access compiler innards -->
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                         <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
