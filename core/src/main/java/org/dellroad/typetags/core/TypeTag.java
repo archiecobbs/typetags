@@ -18,8 +18,8 @@ import java.lang.annotation.Target;
  * <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/themes/prism.min.css" rel="stylesheet"/>
  *
  * <p>
- * The {@link org.dellroad.typetags.checker.TypeTagChecker} plug-in to the Checker framework recognizes such annotations
- * at compile time and checks for invalid assignments. The {@link TypeTags} utility class provides support for runtime
+ * The {@link org.dellroad.typetags.checker.TypeTagsChecker} plug-in to the Checker framework recognizes such annotations
+ * at compile time and checks for invalid assignments. The TypeTags Runtime Weaver provides support for runtime
  * checking (see below).
  *
  * <p>
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * <pre><code class="language-java">
  *  &#47;**
  *   * Annotates declarations of type {&#64;link String} for which
- *   * the value must be non-null and a valid E.164 phone number.
+ *   * the value, if non-null, is a valid E.164 phone number.
  *   *
  *   * &lt;p&gt;
  *   * Optionally, a North American Numbering Plan (NANP) number
@@ -65,20 +65,20 @@ import java.lang.annotation.Target;
  *      &#64;Override
  *      public &lt;T&gt; T validate(PhoneNumber spec, T value) {
  *
- *          // Value must not be null
+ *          // Null checks are performed elsewhere, so we always allow null here
  *          if (value == null)
- *              throw new InvalidValueException("phone number can't be null");
+ *              return value;
  *
- *          // We may assume String here because of &#64;TypeTag.restrictTo()
+ *          // Value must be a {@link String}
  *          final String string = (String)value;
  *
  *          // Check for proper format
  *          if (!string.matches(PhoneNumber.PATTERN))
- *              throw new InvalidValueException("not a valid E.164 phone number");
+ *              throw new TypeRestrictionException("not a valid E.164 phone number");
  *
  *          // Optionally, require number to be North American
  *          if (spec.nanpOnly() &amp;&amp; !string.matches(PhoneNumber.NANP_PATTERN))
- *              throw new InvalidValueException("not a North American phone number");
+ *              throw new TypeRestrictionException("not a North American phone number");
  *
  *          // OK
  *          return value;
@@ -87,7 +87,7 @@ import java.lang.annotation.Target;
  * </code></pre>
  *
  * <p>
- * At compile time, the checker verifies the type restriction:
+ * At compile time, the checker verifies the type restriction when it's possible to do so at compile time:
  *
  * <pre><code class="language-java">
  *  String input = scanner.nextLine();
@@ -95,43 +95,16 @@ import java.lang.annotation.Target;
  * </code></pre>
  *
  * <p>
- * At runtime, the annotation can be supplied to {@link TypeTags#getValidator TypeTags.getValidator()} to build
- * a runtime validator. Unfortunately, this requires a bit of reflection gymnastics:
- *
- * <pre><code class="language-java">
- *  &#47;**
- *   * Verify that the string is valid E.164 phone number.
- *   *
- *   * &#64;param string the value to validate
- *   * &#64;return string
- *   * &#64;throws InvalidValueException if string is invalid
- *   *&#47;
- *  public &#64;PhoneNumber String validatePhoneNumber(String string) {
- *
- *      // Get the annotation (in a real application this would be cached)
- *      PhoneNumber spec;
- *      try {
- *          spec = (PhoneNumber)this.getClass()
- *            .getMethod("validatePhoneNumber", String.class)
- *            .getAnnotatedReturnType()
- *            .getAnnotations()[0];
- *      } catch (ReflectiveOperationException e) {
- *          throw new RuntimeException("unexpected error", e);
- *      }
- *
- *      // Build a Validator from the annotation and validate the value
- *      return TypeTags.getValidator(spec).apply(string);
- *  }
- * </code></pre>
- *
- * <p>
- * Now we can ensure both compile-time and runtime correctness as follows:
+ * Otherwise, casts and {@code instanceof} checks will be performed at runtime:
  *
  * <pre><code class="language-java">
  *  String input = scanner.nextLine();
- *  &#64;PhoneNumber String pn = validatePhoneNumber(input);    // ok! we're safe
+ *  if (input instanceof &#64;PhoneNumber String)
+ *      &#64;PhoneNumber String pn = (&#64;PhoneNumber String)input2;
  * </code></pre>
  *
+ * <p>
+ * These runtime checks are added by the TypeTags Runtime Weaver using classfile modification.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -140,46 +113,31 @@ public @interface TypeTag {
 
     /**
      * Restrict valid values to being instances of one the specified types.
+     * This property is applied both at compile time and at runtime.
      *
      * <p>
-     * If this property is set, then any value that is not assignable to one of the specified types
-     * is considered invalid. During compilation, annotating a type that can't possibly overlap with
-     * one of the specified types will cause an error; at runtime, values' actual types should be checked
-     * and any that don't match immediately rejected (by throwing {@link InvalidValueException}) and not
-     * passed to the validator specified by {@link #validatedBy}, if any.
+     * If this property is set, then during compilation any value that is not assignable to one of the
+     * specified types is considered invalid and will generate an error. At runtime, it is the responsibility
+     * of the {@link #validatedBy} class to perform the same check.
      *
      * <p>
-     * Primitive types are special: at compile time, they are distinct from their corresponding wrapper
-     * types. For example, if {@code restrictTo = int.class}, then the target annotation may be applied to type
-     * {@code int} but not type {@code Integer}. At runtime, primitive types and their corresponding wrapper types
-     * are not distinguished because by the time they are checked, primitive values are always wrapped. So
-     * for example, an {@link Integer} value would be permitted by {@code restrictTo = int.class}, and an
-     * {@link int} value would be permitted by {@code restrictTo = Integer.class}.
-     *
-     * <p>
-     * To not restrict values by type, leave this property set to its default value (i.e., empty).
+     * To not restrict values by type, leave this property set to its default value, i.e., an empty array.
      *
      * @return the supertype(s) of all valid values, or empty for no restriction
      */
     Class<?>[] restrictTo() default { };
 
     /**
-     * Restrict valid values to those that are accepted by an instance of the specified class.
+     * Specify the {@link TypeTagValidator} class that validates values at runtime.
      *
      * <p>
-     * The class must have a public default constructor.
+     * The specified class must have a static, zero-argument method named {@code getInstance()} that provides
+     * an instance of itself. That instance is responsible for validating the {@code value} is an instance of
+     * one of the {@link #restrictTo} types (if any), as well as any other requirements specific to the
+     * target annotation.
      *
-     * <p>
-     * This property is only used at runtime, and only for values that have satisfied the type constraints
-     * imposed by {@link #restrictTo}, if any.
-     *
-     * <p>
-     * If no additional validation is required beyond {@link #restrictTo}, you can leave this property
-     * set to its default value. That can be useful in situations where you want to restrict values
-     * by type only, e.g., "Must be either a {@code String} or a {@code byte[]}".
-     *
-     * @return annotation-based validation class
+     * @return runtime validator class
      */
     @SuppressWarnings("rawtypes")
-    Class<? extends AnnotationValidator/*<?>*/> validatedBy() default AnnotationValidator.class;
+    Class<? extends TypeTagValidator/*<?>*/> validatedBy();
 }
