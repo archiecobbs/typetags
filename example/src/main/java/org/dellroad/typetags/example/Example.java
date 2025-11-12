@@ -4,15 +4,23 @@
 
 package org.dellroad.typetags.example;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.dellroad.typetags.core.InvalidValueException;
-import org.dellroad.typetags.core.TypeTag;
-
 public class Example {
 
+    private final @PhoneNumber String string;
+
     // Example of compile time detection
-    public static @PhoneNumber String compileWarningTest(String input) {
-        return input;                                   // COMPILER error/warning here
+    public Example(String input) {
+        this.string = input;                                // COMPILER warning here
+    }
+
+    // Example of casting with type annotation
+    public static void castToPhoneNumber(String input) {
+        String phoneNumber = (@PhoneNumber String)input;    // RUNTIME exception here
+    }
+
+    // Example of 'instanceof' with type annotation
+    public static boolean isPhoneNumber(String input) {
+        return input instanceof @PhoneNumber String;        // RUNTIME validity test here
     }
 
     // Example of runtime detection
@@ -28,13 +36,17 @@ public class Example {
         // Show input
         System.out.println(String.format("Input string: \"%s\"", input));
 
-        // Try to cast
-        final @PhoneNumber String number;
+        // Test instanceof
+        final boolean itest = Example.isPhoneNumber(input);
+        System.out.println(String.format("Test: instanceof @PhoneNumber String: %s", itest));
+
+        // Test cast
+        System.out.print("Test: cast to @PhoneNumber String: ");
         try {
-            number = (@PhoneNumber String)input;        // RUNTIME exception here
-            System.out.println("The input is VALID!");
-        } catch (InvalidValueException e) {
-            System.out.println("The input is INVALID:");
+            Example.castToPhoneNumber(input);
+            System.out.println("OK");
+        } catch (ClassCastException e) {
+            System.out.println("FAILED");
             e.printStackTrace(System.out);
         }
     }

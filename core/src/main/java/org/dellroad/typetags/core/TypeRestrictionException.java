@@ -26,6 +26,7 @@ public class TypeRestrictionException extends ClassCastException {
      * @param message a description of the failure, or null for none
      * @param cause underlying cause
      */
+    @SuppressWarnings("this-escape")
     public TypeRestrictionException(String message, Throwable cause) {
         super(message);
         this.initCause(cause);
@@ -36,6 +37,7 @@ public class TypeRestrictionException extends ClassCastException {
      *
      * @param cause underlying cause
      */
+    @SuppressWarnings("this-escape")
     public TypeRestrictionException(Throwable cause) {
         this.initCause(cause);
     }

@@ -1,11 +1,11 @@
-This demonstrates a Java *runtime* check added by TypeTags.
+This demonstrates Java runtime checks added by TypeTags.
 
-Our example annotation is @PhoneNumber which annotates the String type to verify that the value is non-null and a valid E.164 phone number.
+The example annotation is @PhoneNumber, which annotates the String type to
+indicate that the value a valid E.164 phone number.
 
-To run the demo, run this command:
+To run the demo, run these two commands and compare outcomes:
 
-    java -jar typetags-example-*-run.jar NUMBER
-
-where NUMBER is any string. If NUMBER is an invalid E.164 phone number, an InvalidValueException should be thrown.
+    java -jar typetags-example-*-run.jar +12024567041
+    java -jar typetags-example-*-run.jar blah-blah
 
 Project info: https://github.com/archiecobbs/typetags

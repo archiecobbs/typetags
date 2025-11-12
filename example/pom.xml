@@ -54,9 +54,11 @@
                             <version>${checkerframework.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                <!--
                     <annotationProcessors>
-                        <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
+                        <annotationProcessor>org.dellroad.typetags.checker.TypeTagsChecker</annotationProcessor>
                     </annotationProcessors>
+                -->
                     <compilerArgs combine.children="append">
 
                         <!-- COMMENT THIS FLAG OUT to make the build fail on violations -->
@@ -77,6 +79,20 @@
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
                     </compilerArgs>
                 </configuration>
+            </plugin>
+
+            <!-- Apply the TypeTagsWeaver -->
+            <plugin>
+                <groupId>org.dellroad</groupId>
+                <artifactId>typetags-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>typetags-weaver</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Build the example launcher jar -->

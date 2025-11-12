@@ -7,51 +7,40 @@ package org.dellroad.typetags.core;
 import java.lang.annotation.Annotation;
 
 /**
- * Implemented by classes capable of validating values according to an annotation-based specification,
- * where the specifying annotation is meta-annotated as a {@link TypeTag}.
+ * Implemented by classes capable of runtime validation of values whose types are annotated with
+ * a {@link TypeTag &#64;TypeTag} meta-annotated annotation.
  *
  * <p>
- * <b>Note:</b> Implementations of this interface must also have a static, zero-argument method named
- * {@code getInstance()} that provides an instance of itself.
- *
- * @param <A> the type of the {@link TypeTag} meta-annotated annotation defining the validation specification
+ * <b>Note:</b> Implementations of this interface must have a public default constructor.
  */
-public interface TypeTagValidator<A extends Annotation> {
+public interface TypeTagValidator {
 
     /**
-     * Validate the given value according to the given specification, and if valid, return it.
+     * Validate the given value according to the given {@link TypeTag &#64;TypeTag} annotation type.
      *
      * <p>
-     * This method <i>should</i> return {@code value} unmodified in order to preserve composability.
-     * However, in some cases, a different but equivalent "normalized" value may be returned.
+     * Whether this method admits null values is up to the implementation.
+     *
+     * <b>Checking {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} at Runtime</b>
      *
      * <p>
-     * In any case, the choice is up to the implementer of this class: i.e., the caller of this method
-     * <i>must</i> use the returned value, not the passed-in value, if validation is successful, i.e.,
-     * no exception is thrown.
-     *
-     * <b>Checking {@link TypeTag#restrictTo} at Runtime</b>
+     * If {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} is non-empty, this method is responsible for validating
+     * that {@code value} is an instance of one of the specified types. Since throwing {@link ClassCastException} is
+     * how this method reports an invalid value, in many cases that check happens automatically.
      *
      * <p>
-     * If {@link TypeTag#restrictTo} is non-empty, this method is responsible for validating that {@code value}
-     * is an instance of one of the specified types. Since throwing {@link ClassCastException} is how this
-     * method reports an invalid value, in many cases that check will happen automatically.
-     *
-     * <p>
-     * Note also that primitive types in {@link TypeTag#restrictTo} must be handled speciallly: at runtime,
-     * primitive values will be wrapped by the time this method sees them, so this method may need to map any
-     * primitive types in {@link TypeTag#restrictTo} to their corresponding wrapper types (e.g.,
+     * Note also that primitive types in {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} must be handled specially:
+     * at runtime, primitive values will be wrapped by the time this method sees them, so this method may need to map any
+     * primitive types in {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} to their corresponding wrapper types (e.g.,
      * via the utility method {@link TypeUtil#primitiveToWrapper TypeUtil.primitiveToWrapper()}).
      *
-     * @param spec {@link TypeTag} meta-annotated annotation specifing validity constraints; must not be null
+     * @param annotationType {@link TypeTag &#64;TypeTag} meta-annotated annotation type; must not be null
      * @param value the value to validate
-     * @param <T> the type of {@code value}
-     * @return the validated value
      * @throws ClassCastException if {@code value} is invalid
      * @throws TypeRestrictionException if {@code value} is invalid due to its value rather than its runtime type
-     * @throws NullPointerException if {@code spec} is null
+     * @throws NullPointerException if {@code annotationType} is null
      */
-    <T> T validate(A spec, T value);
+    void validate(Class<? extends Annotation> annotationType, Object value);
 
     /**
      * Determine whether the given value is valid according to the given specification.
@@ -60,15 +49,14 @@ public interface TypeTagValidator<A extends Annotation> {
      * The implementation in {@link TypeTagValidator} invokes {@link #validate validate()}
      * and returns false if that method throws a {@link ClassCastException}, otherwise true.
      *
-     * @param spec {@link TypeTag} meta-annotated annotation specifing validity constraints; must not be null
+     * @param annotationType {@link TypeTag &#64;TypeTag} meta-annotated annotation type; must not be null
      * @param value the value to validate
-     * @param <T> the type of {@code value}
-     * @return true if {@code value} is valid according to {@code spec}, otherwise false
-     * @throws NullPointerException if {@code spec} is null
+     * @return true if {@code value} is valid for {@code annotationType}, otherwise false
+     * @throws NullPointerException if {@code annotationType} is null
      */
-    default <T> boolean isValid(A spec, T value) {
+    default boolean isValid(Class<? extends Annotation> annotationType, Object value) {
         try {
-            this.validate(spec, value);
+            this.validate(annotationType, value);
         } catch (ClassCastException e) {
             return false;
         }

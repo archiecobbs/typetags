@@ -35,50 +35,28 @@ import java.lang.annotation.Target;
  *  &#47;**
  *   * Annotates declarations of type {&#64;link String} for which
  *   * the value, if non-null, is a valid E.164 phone number.
- *   *
- *   * &lt;p&gt;
- *   * Optionally, a North American Numbering Plan (NANP) number
- *   * may be required.
  *   *&#47;
  *  &#64;Retention(RetentionPolicy.RUNTIME)
  *  &#64;Target(ElementType.TYPE_USE)
- *  &#64;TypeTag(restrictTo = String.class, validatedBy = PhoneNumberChecker.class)
+ *  &#64;TypeTag(restrictTo = String.class, validatedBy = PhoneNumberValidator.class)
  *  public &#64;interface PhoneNumber {
- *
- *      &#47;**
- *       * Determine whether North American Numbering Plan (NANP) numbers are required.
- *       *
- *       * &#64;return true if only NANP numbers are valid
- *       *&#47;
- *      boolean nanpOnly() default false;
  *  }
  *
  *  // Validator for the &#64;PhoneNumber annotation
- *  public static class PhoneNumberChecker implements AnnotationValidator&lt;PhoneNumber&gt; {
+ *  public static class PhoneNumberValidator implements TypeTagValidator {
  *
  *      // E.164 format
  *      private static final String PATTERN = "\\+[1-9][0-9]{6,14}";
  *
- *      // North American Numbering Plan (NANP) numbers
- *      private static final String NANP_PATTERN = "\\+1[2-9][0-9]{2}[2-9][0-9]{6}";
- *
  *      &#64;Override
- *      public &lt;T&gt; T validate(PhoneNumber spec, T value) {
- *
- *          // Null checks are performed elsewhere, so we always allow null here
- *          if (value == null)
- *              return value;
+ *      public void validate(Class&gt;? extends Annotation&gt; annotationType, Object value) {
  *
  *          // Value must be a {@link String}
  *          final String string = (String)value;
  *
- *          // Check for proper format
- *          if (!string.matches(PhoneNumber.PATTERN))
+ *          // Check for proper format (ignore null values, they should be checked elsewhere)
+ *          if (string != null &amp;&amp; !string.matches(PhoneNumber.PATTERN))
  *              throw new TypeRestrictionException("not a valid E.164 phone number");
- *
- *          // Optionally, require number to be North American
- *          if (spec.nanpOnly() &amp;&amp; !string.matches(PhoneNumber.NANP_PATTERN))
- *              throw new TypeRestrictionException("not a North American phone number");
  *
  *          // OK
  *          return value;
@@ -138,6 +116,5 @@ public @interface TypeTag {
      *
      * @return runtime validator class
      */
-    @SuppressWarnings("rawtypes")
-    Class<? extends TypeTagValidator/*<?>*/> validatedBy();
+    Class<? extends TypeTagValidator> validatedBy();
 }
