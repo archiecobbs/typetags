@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"org.dellroad.typetags.core"},{"l":"org.dellroad.typetags.example"},{"l":"org.dellroad.typetags.weaver"}];updateSearchResults();
