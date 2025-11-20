@@ -57,9 +57,6 @@ import java.lang.annotation.Target;
  *          // Check for proper format (ignore null values, they should be checked elsewhere)
  *          if (string != null &amp;&amp; !string.matches(PhoneNumber.PATTERN))
  *              throw new TypeRestrictionException("not a valid E.164 phone number");
- *
- *          // OK
- *          return value;
  *      }
  *  }
  * </code></pre>
