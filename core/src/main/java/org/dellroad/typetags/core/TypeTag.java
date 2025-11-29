@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/themes/prism.min.css" rel="stylesheet"/>
  *
  * <p>
- * The {@link org.dellroad.typetags.checker.TypeTagsChecker} plug-in to the Checker framework recognizes such annotations
+ * The {@code org.dellroad.typetags.checker.TypeTagsChecker} plug-in to the Checker framework recognizes such annotations
  * at compile time and checks for invalid assignments. The TypeTags Runtime Weaver provides support for runtime
  * checking (see below).
  *
@@ -74,7 +74,7 @@ import java.lang.annotation.Target;
  *
  * <pre><code class="language-java">
  *  String input = scanner.nextLine();
- *  if (input instanceof &#64;PhoneNumber String)
+ *  if (input instanceof &#64;PhoneNumber String)   // runtime check performed here
  *      &#64;PhoneNumber String pn = (&#64;PhoneNumber String)input2;
  * </code></pre>
  *
