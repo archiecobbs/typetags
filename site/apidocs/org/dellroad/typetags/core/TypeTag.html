@@ -83,12 +83,7 @@ loadScripts(document, 'script');</script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/themes/prism.min.css" rel="stylesheet"/>
 
 <p>
-The 
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>org.dellroad.typetags.checker.TypeTagsChecker</code></pre>
-</details>
- plug-in to the Checker framework recognizes such annotations
+The <code>org.dellroad.typetags.checker.TypeTagsChecker</code> plug-in to the Checker framework recognizes such annotations
 at compile time and checks for invalid assignments. The TypeTags Runtime Weaver provides support for runtime
 checking (see below).
 
@@ -126,9 +121,6 @@ The <a href="TypeTag.html" title="annotation interface in org.dellroad.typetags.
          // Check for proper format (ignore null values, they should be checked elsewhere)
          if (string != null &amp;&amp; !string.matches(PhoneNumber.PATTERN))
              throw new TypeRestrictionException("not a valid E.164 phone number");
-
-         // OK
-         return value;
      }
  }
 </code></pre>
@@ -144,7 +136,7 @@ At compile time, the checker verifies the type restriction when it's possible to
 Otherwise, casts and <code>instanceof</code> checks will be performed at runtime:
 
 <pre><code class="language-java"> String input = scanner.nextLine();
- if (input instanceof &#64;PhoneNumber String)
+ if (input instanceof &#64;PhoneNumber String)   // runtime check performed here
      &#64;PhoneNumber String pn = (&#64;PhoneNumber String)input2;
 </code></pre>
 
