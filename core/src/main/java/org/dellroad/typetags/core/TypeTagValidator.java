@@ -19,14 +19,20 @@ public interface TypeTagValidator {
      * Validate the given value according to the given {@link TypeTag &#64;TypeTag} annotation type.
      *
      * <p>
-     * Whether this method admits null values is up to the implementation.
+     * Invalid values trigger a {@link ClassCastException} in order to remain "backward compatible" with
+     * normal Java casts. However, if the value is invalid because of its value rather its runtime type,
+     * it is preferrable to throw the more specific type {@link TypeRestrictionException}.
      *
-     * <b>Checking {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} at Runtime</b>
+     * <p>
+     * Whether this method admits null values is up to the implementation, but typically implementations
+     * would always allow null values, since those can be checked separately (e.g., via {@code &#64;NonNull}).
+     *
+     * <p><b>Checking {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} at Runtime</b>
      *
      * <p>
      * If {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} is non-empty, this method is responsible for validating
      * that {@code value} is an instance of one of the specified types. Since throwing {@link ClassCastException} is
-     * how this method reports an invalid value, in many cases that check happens automatically.
+     * how this method reports an invalid value, in many cases this check happens automatically.
      *
      * <p>
      * Note also that primitive types in {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} must be handled specially:
