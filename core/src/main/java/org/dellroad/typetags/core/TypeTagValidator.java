@@ -21,11 +21,11 @@ public interface TypeTagValidator {
      * <p>
      * Invalid values trigger a {@link ClassCastException} in order to remain "backward compatible" with
      * normal Java casts. However, if the value is invalid because of its value rather its runtime type,
-     * it is preferrable to throw the more specific type {@link TypeRestrictionException}.
+     * it is preferrable to throw the more specific {@link TypeRestrictionException}.
      *
      * <p>
      * Whether this method admits null values is up to the implementation, but typically implementations
-     * would always allow null values, since those can be checked separately (e.g., via {@code &#64;NonNull}).
+     * would always allow null values, since those can be checked separately (e.g., via {@code @NonNull}).
      *
      * <p><b>Checking {@link TypeTag#restrictTo &#64;TypeTag.restrictTo()} at Runtime</b>
      *
