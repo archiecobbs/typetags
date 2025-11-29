@@ -222,11 +222,11 @@ implements <a href="../core/TypeTagValidator.html" title="interface in org.dellr
 <p>
 Invalid values trigger a <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/ClassCastException.html" title="class or interface in java.lang" class="external-link"><code>ClassCastException</code></a> in order to remain "backward compatible" with
 normal Java casts. However, if the value is invalid because of its value rather its runtime type,
-it is preferrable to throw the more specific type <a href="../core/TypeRestrictionException.html" title="class in org.dellroad.typetags.core"><code>TypeRestrictionException</code></a>.
+it is preferrable to throw the more specific <a href="../core/TypeRestrictionException.html" title="class in org.dellroad.typetags.core"><code>TypeRestrictionException</code></a>.
 
 <p>
 Whether this method admits null values is up to the implementation, but typically implementations
-would always allow null values, since those can be checked separately (e.g., via <code>&amp;#64;NonNull</code>).
+would always allow null values, since those can be checked separately (e.g., via <code>@NonNull</code>).
 
 <p><b>Checking <a href="../core/TypeTag.html#restrictTo()"><code>&#64;TypeTag.restrictTo()</code></a> at Runtime</b>
 
